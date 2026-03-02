@@ -1,0 +1,28 @@
+<h1>Welcome, {{ user.username }}</h1>
+
+<h2>My Items</h2>
+<ul>
+{% for item in my_items %}
+    <li>{{ item.title }} ({{ item.item_type }}) - {{ item.status }}</li>
+{% empty %}
+    <li>No items yet.</li>
+{% endfor %}
+</ul>
+
+<h2>Open Lost Items</h2>
+<ul>
+{% for item in open_lost %}
+    <li>{{ item.title }} - {{ item.category.name }} - {{ item.location }}</li>
+{% empty %}
+    <li>No open lost items.</li>
+{% endfor %}
+</ul>
+
+<h2>Open Found Items</h2>
+<ul>
+{% for item in open_found %}
+    <li>{{ item.title }} - {{ item.category.name }} - {{ item.location }}</li>
+{% empty %}
+    <li>No open found items.</li>
+{% endfor %}
+</ul>

@@ -35,6 +35,19 @@ class ItemQuerySet(models.QuerySet):
     def found(self):
         return self.filter(item_type='FOUND')
 
+class ItemManager(models.Manager):
+    def get_queryset(self):
+        return ItemQuerySet(self.model, using=self._db)
+
+    def open(self):
+        return self.get_queryset().open()
+
+    def lost(self):
+        return self.get_queryset().lost()
+
+    def found(self):
+        return self.get_queryset().found()
+
 class Item(models.Model):
     ITEM_TYPE_CHOICES = [
         ('LOST', 'Lost'),
@@ -66,7 +79,7 @@ class Item(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='OPEN')
 
     embedding_vector = models.JSONField(null=True, blank=True)  # future AI embeddings
-    objects = ItemQuerySet.as_manager()
+    objects = ItemManager()
 
     class Meta:
         indexes = [
