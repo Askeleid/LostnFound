@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Q
+from django.utils import timezone
+from django.db import transaction
 
 
 class Profile(models.Model):
@@ -22,6 +25,15 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class ItemQuerySet(models.QuerySet):
+    def open(self):
+        return self.filter(status='OPEN')
+
+    def lost(self):
+        return self.filter(item_type='LOST')
+
+    def found(self):
+        return self.filter(item_type='FOUND')
 
 class Item(models.Model):
     ITEM_TYPE_CHOICES = [
@@ -54,6 +66,7 @@ class Item(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='OPEN')
 
     embedding_vector = models.JSONField(null=True, blank=True)  # future AI embeddings
+    objects = ItemQuerySet.as_manager()
 
     class Meta:
         indexes = [
@@ -89,6 +102,26 @@ class Claim(models.Model):
 
     class Meta:
         unique_together = ('item', 'claimer')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['item'],
+                condition=Q(status='APPROVED'),
+                name='unique_approved_claim_per_item'
+            )
+        ]
 
     def __str__(self):
         return f"Claim by {self.claimer.username} on {self.item.title}"
+    
+    @transaction.atomic
+    def approve(self):
+        if self.status != 'PENDING':
+            raise ValueError("Claim already processed")
+
+        self.status = 'APPROVED'
+        self.reviewed_at = timezone.now()
+        self.save()
+
+        self.item.status = 'CLOSED'
+        self.item.save()
+        
