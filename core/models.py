@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q #For complex db queries that needs logical operators
 from django.utils import timezone
-from django.db import transaction
+from django.db import transaction #Ensures atomicity
 
 
 class Profile(models.Model):
@@ -25,7 +25,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-class ItemQuerySet(models.QuerySet):
+class ItemQuerySet(models.QuerySet): #Defining custom query set
     def open(self):
         return self.filter(status='OPEN')
 
@@ -33,9 +33,9 @@ class ItemQuerySet(models.QuerySet):
         return self.filter(item_type='LOST')
 
     def found(self):
-        return self.filter(item_type='FOUND')
+        return self.filter(item_type='FOUND') #Can do chainable methods e.g. Item.objects.open().lost()
 
-class ItemManager(models.Manager):
+class ItemManager(models.Manager): #passes calls to the custom query set
     def get_queryset(self):
         return ItemQuerySet(self.model, using=self._db)
 
@@ -48,7 +48,7 @@ class ItemManager(models.Manager):
     def found(self):
         return self.get_queryset().found()
 
-class Item(models.Model):
+class Item(models.Model): #(db_value, display_value) format for django admin
     ITEM_TYPE_CHOICES = [
         ('LOST', 'Lost'),
         ('FOUND', 'Found')
@@ -72,22 +72,22 @@ class Item(models.Model):
     item_type = models.CharField(max_length=10, choices=ITEM_TYPE_CHOICES)
     location = models.CharField(max_length=255)
 
-    event_date = models.DateField(null=True, blank=True)  # actual lost/found date
-    date_posted = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    event_date = models.DateField(null=True, blank=True)  #actual lost/found date
+    date_posted = models.DateTimeField(auto_now_add=True) #Set once when object is created
+    updated_at = models.DateTimeField(auto_now=True) #Updates everytime object is saved
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='OPEN')
 
     embedding_vector = models.JSONField(null=True, blank=True)  # future AI embeddings
-    objects = ItemManager()
+    objects = ItemManager() #Custom manager
 
-    class Meta:
+    class Meta: #provides metadata (config options)
         indexes = [
             models.Index(fields=['item_type']),
             models.Index(fields=['status']),
             models.Index(fields=['category']),
             models.Index(fields=['date_posted']),
-        ]
+        ] #speeds up queries on these fields
 
     def __str__(self):
         return f"{self.title} ({self.item_type})"
@@ -114,11 +114,11 @@ class Claim(models.Model):
     reviewed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('item', 'claimer')
+        unique_together = ('item', 'claimer') #Prevents duplicate claims on the same item
         constraints = [
             models.UniqueConstraint(
                 fields=['item'],
-                condition=Q(status='APPROVED'),
+                condition=Q(status='APPROVED'), #Only one approved claim per item
                 name='unique_approved_claim_per_item'
             )
         ]
@@ -138,3 +138,7 @@ class Claim(models.Model):
         self.item.status = 'CLOSED'
         self.item.save()
         
+# One approved claim per item (database constraint)
+# Claim status changes are atomic (transaction)
+# Approving a claim automatically closes the item
+# Items can have multiple pending claims, but only one approved

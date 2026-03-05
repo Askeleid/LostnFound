@@ -1,15 +1,15 @@
 from django.contrib import admin
 from .models import Profile, Category, Item, Claim
 
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
+@admin.register(Profile) #Registers the model with the admin site
+class ProfileAdmin(admin.ModelAdmin): #ModelAdmin defines how the model appears in admin
     list_display = ('user', 'phone_number', 'trust_score', 'created_at')
-    search_fields = ('user__username', 'phone_number')
-    readonly_fields = ('trust_score', 'created_at')
+    search_fields = ('user__username', 'phone_number') #searches the username field for related user model.
+    readonly_fields = ('trust_score', 'created_at') #Can't be edited
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name',) #Only has name field
     search_fields = ('name',)
 
 @admin.register(Item)
