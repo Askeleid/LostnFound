@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q #For complex db queries that needs logical operators
 from django.utils import timezone
 from django.db import transaction #Ensures atomicity
+from django.core.exceptions import ValidationError, PermissionDenied
 
 
 class Profile(models.Model):
@@ -62,7 +63,7 @@ class Item(models.Model): #(db_value, display_value) format for django admin
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="items")
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
 
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -122,12 +123,30 @@ class Claim(models.Model):
                 name='unique_approved_claim_per_item'
             )
         ]
+    
+    def clean(self):
+        if self.item.user == self.claimer:
+            raise ValidationError("You cannot claim your own item.")
+        
+        if Claim.objects.filter(item=self.item, claimer=self.claimer).exclude(pk=self.pk).exists():
+            raise ValidationError("You have already claimed this item.")
+        
+        if self.status == 'APPROVED':
+            if Claim.objects.filter(item=self.item, status='APPROVED').exclude(pk=self.pk).exists():
+                raise ValidationError("This item already has an approved claim.")
 
     def __str__(self):
         return f"Claim by {self.claimer.username} on {self.item.title}"
     
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+    
     @transaction.atomic
-    def approve(self):
+    def approve(self, acting_user):
+        if self.item.user != acting_user:
+            raise PermissionDenied("Only the item owner can approve this claim.")
+
         if self.status != 'PENDING':
             raise ValueError("Claim already processed")
 
@@ -138,6 +157,16 @@ class Claim(models.Model):
         self.item.status = 'CLOSED'
         self.item.save()
         
+    def reject(self, acting_user):
+        if self.item.user != acting_user:
+            raise PermissionDenied("Only the item owner can reject this claim.")
+
+        if self.status != 'PENDING':
+            raise ValueError("Claim already processed")
+
+        self.status = 'REJECTED'
+        self.reviewed_at = timezone.now()
+        self.save()        
 # One approved claim per item (database constraint)
 # Claim status changes are atomic (transaction)
 # Approving a claim automatically closes the item

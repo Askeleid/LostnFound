@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Submit Claim{% endblock %}
+
+{% block content %}
+<h1>Claim Item: {{ item.title }}</h1>
+<p><strong>Category:</strong> {{ item.category.name }} | <strong>Location:</strong> {{ item.location }}</p>
+<p><strong>Posted by:</strong> {{ item.user.username }}</p>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Claim</button>
+</form>
+
+<a href="{% url 'home' %}">Back to Dashboard</a>
+{% endblock %}

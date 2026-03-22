@@ -1,28 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
 <h1>Welcome, {{ user.username }}</h1>
 
+<hr>
+
+<!-- My Items -->
 <h2>My Items</h2>
 <ul>
-{% for item in my_items %}
-    <li>{{ item.title }} ({{ item.item_type }}) - {{ item.status }}</li>
-{% empty %}
-    <li>No items yet.</li>
-{% endfor %}
+    {% for item in my_items %}
+        <li>
+            {{ item.title }} ({{ item.item_type }}) - {{ item.status }}
+        </li>
+    {% empty %}
+        <li>No items yet.</li>
+    {% endfor %}
 </ul>
 
+<hr>
+
+<!-- Open Lost Items -->
 <h2>Open Lost Items</h2>
 <ul>
-{% for item in open_lost %}
-    <li>{{ item.title }} - {{ item.category.name }} - {{ item.location }}</li>
-{% empty %}
-    <li>No open lost items.</li>
-{% endfor %}
+    {% for item in open_lost %}
+        <li>
+            {{ item.title }} - {{ item.category.name }} - {{ item.location }}
+            {% if item.user != user %}
+                <a href="{% url 'create_claim' item.id %}">Claim</a>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>No open lost items.</li>
+    {% endfor %}
 </ul>
 
+<hr>
+
+<!-- Open Found Items -->
 <h2>Open Found Items</h2>
 <ul>
-{% for item in open_found %}
-    <li>{{ item.title }} - {{ item.category.name }} - {{ item.location }}</li>
+    {% for item in open_found %}
+        <li>
+            {{ item.title }} - {{ item.category.name }} - {{ item.location }}
+            {% if item.user != user %}
+                <a href="{% url 'submit_claim' item.id %}">Claim</a>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>No open found items.</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<!-- Claims Made by User -->
+<h2>Claims Made</h2>
+<ul>
+    {% for claim in claims_made %}
+        <li>{{ claim.item.title }} - {{ claim.status }}</li>
+    {% empty %}
+        <li>No claims made yet.</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<!-- Claims Received for My Items -->
+<h2>Claims Received</h2>
+<ul>
+{% for claim in claims_received %}
+    <li>
+        {{ claim.claimer.username }} → {{ claim.item.title }} ({{ claim.status }})
+        {% if claim.status == "PENDING" and claim.item.user == user %}
+            <a href="{% url 'approve_claim' claim.id %}">Approve</a> |
+            <a href="{% url 'reject_claim' claim.id %}">Reject</a>
+        {% endif %}
+    </li>
 {% empty %}
-    <li>No open found items.</li>
+    <li>No incoming claims.</li>
 {% endfor %}
 </ul>
+{% endblock %}
