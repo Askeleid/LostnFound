@@ -5,14 +5,54 @@
 
 {% block content %}
 <h1>Claim Item: {{ item.title }}</h1>
-<p><strong>Category:</strong> {{ item.category.name }} | <strong>Location:</strong> {{ item.location }}</p>
+
+<p><strong>Category:</strong> {{ item.category.name }}</p>
+<p><strong>Location:</strong> {{ item.location }}</p>
 <p><strong>Posted by:</strong> {{ item.user.username }}</p>
+
+{% if item.image %}
+    <p><strong>Item Image:</strong></p>
+    <img src="{{ item.image.url }}" width="200">
+{% endif %}
+
+<hr>
 
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    <!-- Message -->
+    <p>
+        {{ form.message.label_tag }}<br>
+        {{ form.message }}
+    </p>
+
+    <!-- Claim Image -->
+    <p>
+        {{ form.claim_image.label_tag }}<br>
+        {{ form.claim_image }}
+    </p>
+
+    <!-- Preview -->
+    <img id="preview" style="display:none;" width="200"/>
+
+    <br>
     <button type="submit">Submit Claim</button>
 </form>
 
 <a href="{% url 'home' %}">Back to Dashboard</a>
+
+<script>
+const fileInput = document.querySelector('input[name="claim_image"]');
+const preview = document.getElementById('preview');
+
+fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = "block";
+    }
+});
+</script>
+
 {% endblock %}

@@ -6,7 +6,8 @@ class CoreConfig(AppConfig):
     name = "core" #Used by django to locate the app's models, migrations, templates etc.
     
     def ready(self):
-        import core.signals #Without this, signal handlers defined 
+        import core.signals 
+        #Without this, signal handlers defined 
         #in signals.py might never be connecetd
         
 #ready() method called by django once when the app starts

@@ -23,13 +23,19 @@
 <!-- Open Lost Items -->
 <h2>Open Lost Items</h2>
 <ul>
-    {% for item in open_lost %}
-        <li>
-            {{ item.title }} - {{ item.category.name }} - {{ item.location }}
-            {% if item.user != user %}
-                <a href="{% url 'create_claim' item.id %}">Claim</a>
-            {% endif %}
-        </li>
+{% for item in open_lost %}
+    <li>
+        <strong>{{ item.title }}</strong> - {{ item.category.name }} - {{ item.location }}
+
+        {% if item.image %}
+            <br>
+            <img src="{{ item.image.url }}" alt="Item Image" width="150">
+        {% endif %}
+
+        {% if item.user != user %}
+            <a href="{% url 'submit_claim' item.id %}">Claim</a>
+        {% endif %}
+    </li>
     {% empty %}
         <li>No open lost items.</li>
     {% endfor %}
@@ -40,13 +46,19 @@
 <!-- Open Found Items -->
 <h2>Open Found Items</h2>
 <ul>
-    {% for item in open_found %}
-        <li>
-            {{ item.title }} - {{ item.category.name }} - {{ item.location }}
-            {% if item.user != user %}
-                <a href="{% url 'submit_claim' item.id %}">Claim</a>
-            {% endif %}
-        </li>
+{% for item in open_found %}
+    <li>
+        <strong>{{ item.title }}</strong> - {{ item.category.name }} - {{ item.location }}
+
+        {% if item.image %}
+            <br>
+            <img src="{{ item.image.url }}" alt="Item Image" width="150">
+        {% endif %}
+
+        {% if item.user != user %}
+            <a href="{% url 'submit_claim' item.id %}">Claim</a>
+        {% endif %}
+    </li>
     {% empty %}
         <li>No open found items.</li>
     {% endfor %}
@@ -77,8 +89,46 @@
             <a href="{% url 'reject_claim' claim.id %}">Reject</a>
         {% endif %}
     </li>
+    {% empty %}
+        <li>No incoming claims.</li>
+    {% endfor %}
+</ul>
+
+<h2>Notifications</h2>
+<ul>
+{% for n in notifications %}
+    <li>
+        {{ n.message }}
+        
+        {% if not n.is_read %}
+            <strong>(new)</strong>
+            <a href="{% url 'mark_notification_read' n.id %}">Mark as read</a>
+        {% endif %}
+    </li>
 {% empty %}
-    <li>No incoming claims.</li>
+    <li>No notifications.</li>
 {% endfor %}
 </ul>
+
+<h2>AI Matches (Top Suggestions)</h2>
+
+{% for group in matched_results %}
+    <h3>{{ group.item.title }}</h3>
+
+    <ul>
+    {% for item, score in group.matches %}
+        <li>
+            {{ item.title }} — Score: {{ score|floatformat:2 }}
+            ({{ item.category.name }} - {{ item.location }})
+        </li>
+    {% empty %}
+        <li>No valid matches found</li>
+    {% endfor %}
+    </ul>
+
+    <hr>
+{% empty %}
+    <p>No lost items to match.</p>
+{% endfor %}
+
 {% endblock %}

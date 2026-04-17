@@ -4,10 +4,11 @@ from django.db.models import Q #For complex db queries that needs logical operat
 from django.utils import timezone
 from django.db import transaction #Ensures atomicity
 from django.core.exceptions import ValidationError, PermissionDenied
+from core.utils.embeddings import get_image_embedding, get_text_embedding
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE) #One user = One profile
     phone_number = models.CharField(max_length=15)
     trust_score = models.FloatField(default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -26,27 +27,27 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-class ItemQuerySet(models.QuerySet): #Defining custom query set
-    def open(self):
+class ItemQuerySet(models.QuerySet["Item"]): #Defining custom query set
+    def open(self) -> "ItemQuerySet":
         return self.filter(status='OPEN')
 
-    def lost(self):
+    def lost(self) -> "ItemQuerySet":
         return self.filter(item_type='LOST')
 
-    def found(self):
+    def found(self) -> "ItemQuerySet":
         return self.filter(item_type='FOUND') #Can do chainable methods e.g. Item.objects.open().lost()
 
-class ItemManager(models.Manager): #passes calls to the custom query set
-    def get_queryset(self):
+class ItemManager(models.Manager["Item"]): #passes calls to the custom query set
+    def get_queryset(self) -> ItemQuerySet:
         return ItemQuerySet(self.model, using=self._db)
 
-    def open(self):
+    def open(self) -> ItemQuerySet:
         return self.get_queryset().open()
 
-    def lost(self):
+    def lost(self) -> ItemQuerySet:
         return self.get_queryset().lost()
 
-    def found(self):
+    def found(self) -> ItemQuerySet:
         return self.get_queryset().found()
 
 class Item(models.Model): #(db_value, display_value) format for django admin
@@ -79,8 +80,9 @@ class Item(models.Model): #(db_value, display_value) format for django admin
 
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='OPEN')
 
-    embedding_vector = models.JSONField(null=True, blank=True)  # future AI embeddings
-    objects = ItemManager() #Custom manager
+    image_embedding = models.JSONField(null=True, blank=True)
+    text_embedding = models.JSONField(null=True, blank=True)
+    objects = ItemManager()  # type: ignore[assignment]
 
     class Meta: #provides metadata (config options)
         indexes = [
@@ -125,6 +127,8 @@ class Claim(models.Model):
         ]
     
     def clean(self):
+        if not self.item_id:
+            return
         if self.item.user == self.claimer:
             raise ValidationError("You cannot claim your own item.")
         
@@ -139,7 +143,7 @@ class Claim(models.Model):
         return f"Claim by {self.claimer.username} on {self.item.title}"
     
     def save(self, *args, **kwargs):
-        self.full_clean()
+        self.full_clean(exclude=['item'] if not self.item_id else [])
         super().save(*args, **kwargs)
     
     @transaction.atomic
@@ -171,3 +175,12 @@ class Claim(models.Model):
 # Claim status changes are atomic (transaction)
 # Approving a claim automatically closes the item
 # Items can have multiple pending claims, but only one approved
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}"
