@@ -1,10 +1,15 @@
 from .embeddings import cosine_similarity
+import logging
 
+logger = logging.getLogger("ai_pipeline")
 
 def match_items(source_item, candidate_items, alpha=0.5):
     results = []
     
-    if not source_item.image_embedding or not source_item.text_embedding:
+    if not source_item.text_embedding: #!!!!
+        logger.warning(
+            f"[MATCH_SKIPPED_SOURCE] item_id={source_item.id} reason=missing_embeddings"
+        )
         return []
 
 
@@ -13,8 +18,13 @@ def match_items(source_item, candidate_items, alpha=0.5):
             continue
         if item.user == source_item.user:
             continue
+        if source_item.id == item.id:
+            continue
         
-        if not item.image_embedding or not item.text_embedding:
+        if not item.text_embedding: #!!!
+            logger.info(
+                f"[MATCH_SKIPPED_CANDIDATE] item_id={item.id} reason=missing_embeddings"
+            )
             continue
 
         # image similarity

@@ -8,5 +8,8 @@ urlpatterns = [
     path('approve/<int:claim_id>/', views.approve_claim, name='approve_claim'),
     path('reject/<int:claim_id>/', views.reject_claim, name='reject_claim'),
     path('notification/read/<int:notification_id>/', views.mark_notification_read, name='mark_notification_read'),
+    path('register/', views.register, name='register'),
+    path('logout/', views.logout_user, name='logout'),
+    path('delete/<int:item_id>/', views.delete_item, name='delete_item'),
     # we can add claims, profile, etc., later
 ]

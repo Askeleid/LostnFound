@@ -13,7 +13,36 @@ from .forms import ClaimForm
 from django.core.mail import send_mail
 from .models import Notification
 from .utils.matching import match_items
+from django.contrib.auth import login
+from django.contrib.auth import logout
+from .forms import RegisterForm
+from .models import Profile
 
+
+def logout_user(request):
+    logout(request)
+    return redirect('login')
+
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+
+        if form.is_valid():
+            user = form.save()
+
+            # Profile already auto-created via signal
+            profile = user.profile
+
+            # Only store phone later; nothing required now
+            profile.save()
+
+            login(request, user)
+            return redirect('home')
+
+    else:
+        form = RegisterForm()
+
+    return render(request, 'register.html', {'form': form})
 
 @login_required
 def create_item(request):
@@ -25,7 +54,7 @@ def create_item(request):
             item = form.save(commit=False)
             item.user = request.user
             item.save()
-            return redirect('dashboard') #Prevents duplicate form submission
+            return redirect('home') #Prevents duplicate form submission
     else:
         form = ItemForm()
     return render(request, 'create_item.html', {'form': form})
@@ -47,7 +76,7 @@ def dashboard(request):
 
     for lost_item in user_lost_items:
         #Skip invalid embeddings
-        if not lost_item.image_embedding or not lost_item.text_embedding:
+        if not lost_item.text_embedding: # Description is mandatory
             continue
         
         #Smart filtering
@@ -210,3 +239,18 @@ def mark_notification_read(request, notification_id):
     notification.save()
 
     return redirect('home')
+
+
+@login_required
+def delete_item(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+
+    if item.user != request.user:
+        return redirect('home')
+
+    if request.method == 'POST':
+        item.delete()
+        messages.success(request, "Item deleted successfully.")
+        return redirect('home')
+
+    return render(request, 'confirm_delete.html', {'item': item})

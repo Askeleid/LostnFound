@@ -12,11 +12,23 @@
     {% for item in my_items %}
         <li>
             {{ item.title }} ({{ item.item_type }}) - {{ item.status }}
+            
+            {% if item.image %}
+                <br>
+                <img src="{{ item.image.url }}" width="120" style="border-radius:8px;">
+            {% endif %}
+
+            <form method="POST" action="{% url 'delete_item' item.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form>
         </li>
+
     {% empty %}
         <li>No items yet.</li>
     {% endfor %}
 </ul>
+
 
 <hr>
 
@@ -116,10 +128,25 @@
     <h3>{{ group.item.title }}</h3>
 
     <ul>
-    {% for item, score in group.matches %}
+    {% for match in group.matches %}
         <li>
-            {{ item.title }} — Score: {{ score|floatformat:2 }}
-            ({{ item.category.name }} - {{ item.location }})
+
+            {{ match.item.title }} — Score: {{ match.score|floatformat:2 }}
+
+            <br>
+            {{ match.item.category.name }} - {{ match.item.location }}
+
+            {% if match.item.image %}
+                <br>
+                <img src="{{ match.item.image.url }}" width="120">
+            {% endif %}
+
+            <br>
+
+            {% if match.item.user != user %}
+                <a href="{% url 'submit_claim' match.item.id %}">Claim</a>
+            {% endif %}
+
         </li>
     {% empty %}
         <li>No valid matches found</li>
@@ -131,4 +158,4 @@
     <p>No lost items to match.</p>
 {% endfor %}
 
-{% endblock %}
+{%endblock%}

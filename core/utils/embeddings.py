@@ -4,13 +4,11 @@ import torchvision.models as models
 from PIL import Image
 import numpy as np
 from typing import cast
+import logging
 
 from sentence_transformers import SentenceTransformer
 
-# ---------------------------
-# Lazy loaded models
-# ---------------------------
-
+logger = logging.getLogger("ai_pipeline")
 # Image model (EfficientNet-B0)
 _image_model = None
 _text_model = None
@@ -84,7 +82,7 @@ def get_image_embedding(image_path):
         return embedding.tolist()
 
     except Exception as e:
-        print("Image embedding error:", e)
+        logger.warning(f"[IMAGE_EMBEDDING_FAILED] path={image_path} error={str(e)}")
         return None
 
 
@@ -110,7 +108,7 @@ def get_text_embedding(text):
         embedding = model.encode(text)
         return embedding.tolist()
     except Exception as e:
-        print("Text embedding error:", e)
+        logger.warning(f"[TEXT_EMBEDDING_FAILED] error={str(e)} text={text[:50]}")
         return None
     
 # -----------------------------
@@ -144,8 +142,30 @@ def combined_similarity(item_a, item_b, alpha=0.5):
         item_b.get("text_embedding")
     )
     
-    if img_sim is None or text_sim is None:
+    if img_sim is None and text_sim is None:
         return None
+    
+    if img_sim is None:
+        return {
+            "score": text_sim,
+            "cv_score": None,
+            "nlp_score": text_sim,
+            "disagreement": 0,
+            "explanation": {
+                "mode": "NLP_ONLY"
+            }
+        }
+
+    if text_sim is None:
+        return {
+            "score": img_sim,
+            "cv_score": img_sim,
+            "nlp_score": None,
+            "disagreement": 0,
+            "explanation": {
+                "mode": "CV_ONLY"
+            }
+        }
 
     base = (alpha * img_sim) + ((1 - alpha) * text_sim)
     
