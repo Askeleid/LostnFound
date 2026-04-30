@@ -184,3 +184,47 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}"
+    
+    
+
+class ItemMatch(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('ACCEPTED', 'Accepted'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    source_item = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE,
+        related_name='source_matches'
+    )
+
+    matched_item = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE,
+        related_name='candidate_matches'
+    )
+
+    score = models.FloatField()
+
+    cv_score = models.FloatField(null=True, blank=True)
+    nlp_score = models.FloatField(null=True, blank=True)
+
+    category_boost = models.FloatField(default=0)
+    location_boost = models.FloatField(default=0)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='PENDING'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('source_item', 'matched_item')
+        ordering = ['-score']
+
+    def __str__(self):
+        return f"{self.source_item.title} → {self.matched_item.title} ({self.score:.2f})"

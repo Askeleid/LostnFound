@@ -1,4 +1,5 @@
 from .embeddings import cosine_similarity
+from core.models import ItemMatch
 import logging
 
 logger = logging.getLogger("ai_pipeline")
@@ -67,7 +68,20 @@ def match_items(source_item, candidate_items, alpha=0.5):
         final_score = base_score + category_boost + location_boost
         
 
+        match_obj, created = ItemMatch.objects.update_or_create(
+            source_item=source_item,
+            matched_item=item,
+            defaults={
+                "score": final_score,
+                "cv_score": img_sim,
+                "nlp_score": text_sim,
+                "category_boost": category_boost,
+                "location_boost": location_boost,
+            }
+        )
+
         results.append({
+            "match_obj": match_obj,
             "item": item,
             "score": final_score,
             "base_score": base_score,
