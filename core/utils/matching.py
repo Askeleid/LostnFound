@@ -65,7 +65,7 @@ def match_items(source_item, candidate_items, alpha=0.5):
                 location_boost = 0.1
 
         # final score -> Image+text similarity+Category & location relevance
-        final_score = base_score + category_boost + location_boost
+        final_score = min(1.0, (base_score + category_boost + location_boost))
         
 
         match_obj, created = ItemMatch.objects.update_or_create(

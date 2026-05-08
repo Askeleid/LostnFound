@@ -7,6 +7,40 @@
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
+
+    <!-- Image preview section -->
+    <div id="preview-section" style="display:none; margin-top:20px;">
+        <h3>Review your image before posting</h3>
+        <img id="image-preview"
+             style="max-width:200px; border-radius:8px;">
+    </div>
+
+    <br><br>
     <button type="submit">Post Item</button>
 </form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const fileInput = document.querySelector('input[type="file"][name="image"]');
+    const preview = document.getElementById("image-preview");
+    const previewSection = document.getElementById("preview-section");
+
+    if (!fileInput) return;
+
+    fileInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                previewSection.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        } else {
+            previewSection.style.display = "none";
+        }
+    });
+});
+</script>
+
 {% endblock %}

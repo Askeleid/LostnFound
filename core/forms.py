@@ -22,7 +22,7 @@ class RegisterForm(UserCreationForm):
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        exclude = ['user', 'status', 'date_posted', 'updated_at']
+        exclude = ['user', 'status', 'date_posted', 'updated_at','image_embedding', 'text_embedding']
         fields = '__all__'
         widgets = {
             'event_date': forms.DateInput(attrs={'type': 'date'}),

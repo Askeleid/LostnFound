@@ -219,6 +219,17 @@ class ItemMatch(models.Model):
         choices=STATUS_CHOICES,
         default='PENDING'
     )
+    
+    user_feedback = models.CharField(
+        max_length=20,
+        choices=[
+            ('HELPFUL', 'Helpful'),
+            ('NOT_HELPFUL', 'Not Helpful'),
+            ('IGNORED', 'Ignored'),
+        ],
+        null=True,
+        blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 

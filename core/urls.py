@@ -11,5 +11,6 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('logout/', views.logout_user, name='logout'),
     path('delete/<int:item_id>/', views.delete_item, name='delete_item'),
+    path('match-feedback/<int:match_id>/<str:feedback>/', views.match_feedback, name='match_feedback'),
     # we can add claims, profile, etc., later
 ]

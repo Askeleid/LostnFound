@@ -45,7 +45,7 @@
         {% endif %}
 
         {% if item.user != user %}
-            <a href="{% url 'submit_claim' item.id %}">Claim</a>
+            <a href="{% url 'submit_claim' item.id %}">Submit</a>
         {% endif %}
     </li>
     {% empty %}
@@ -129,25 +129,46 @@
 
     <ul>
     {% for match in group.matches %}
-        <li>
+        <li style="border:1px solid #ccc; padding:12px; margin-bottom:12px; border-radius:8px;">
 
-            {{ match.item.title }} — Score: {{ match.score|floatformat:2 }}
+        <strong>{{ match.item.title }}</strong> — Score: {{ match.score|floatformat:2 }}
 
+        <br>
+        {{ match.item.category.name }} - {{ match.item.location }}
+
+        {% if match.item.image %}
             <br>
-            {{ match.item.category.name }} - {{ match.item.location }}
+            <img src="{{ match.item.image.url }}" width="120" style="border-radius:8px;">
+        {% endif %}
 
-            {% if match.item.image %}
-                <br>
-                <img src="{{ match.item.image.url }}" width="120">
-            {% endif %}
+        <br><br>
 
+        {% if match.item.user != user %}
+            <a href="{% url 'submit_claim' match.item.id %}">
+                Claim
+            </a>
+        {% endif %}
+
+        |
+
+        <a href="{% url 'match_feedback' match.match_obj.id 'HELPFUL' %}">
+            Helpful
+        </a>
+
+        |
+
+        <a href="{% url 'match_feedback' match.match_obj.id 'NOT_HELPFUL' %}">
+            Not Helpful
+        </a>
+
+        {% if match.match_obj.user_feedback %}
             <br>
+            <small>
+                Feedback: {{ match.match_obj.user_feedback }}
+            </small>
+        {% endif %}
 
-            {% if match.item.user != user %}
-                <a href="{% url 'submit_claim' match.item.id %}">Claim</a>
-            {% endif %}
-
-        </li>
+    </li>
     {% empty %}
         <li>No valid matches found</li>
     {% endfor %}

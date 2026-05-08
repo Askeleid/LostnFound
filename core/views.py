@@ -17,6 +17,7 @@ from django.contrib.auth import login
 from django.contrib.auth import logout
 from .forms import RegisterForm
 from .models import Profile
+from .models import ItemMatch
 
 
 def logout_user(request):
@@ -254,3 +255,26 @@ def delete_item(request, item_id):
         return redirect('home')
 
     return render(request, 'confirm_delete.html', {'item': item})
+
+
+@login_required
+def match_feedback(request, match_id, feedback):
+    match = get_object_or_404(ItemMatch, id=match_id)
+
+    # Only owner of source item can give feedback
+    if match.source_item.user != request.user:
+        return redirect('home')
+
+    valid_feedback = ['HELPFUL', 'NOT_HELPFUL', 'IGNORED']
+
+    if feedback in valid_feedback:
+        match.user_feedback = feedback
+
+        if feedback == 'HELPFUL':
+            match.status = 'ACCEPTED'
+        elif feedback == 'NOT_HELPFUL':
+            match.status = 'REJECTED'
+
+        match.save()
+
+    return redirect('home')
