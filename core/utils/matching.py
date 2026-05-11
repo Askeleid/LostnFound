@@ -4,8 +4,30 @@ import logging
 
 logger = logging.getLogger("ai_pipeline")
 
-def match_items(source_item, candidate_items, alpha=0.5):
+def get_learned_alpha(category):
+    accepted = list(ItemMatch.objects.filter(
+        status='ACCEPTED',
+        source_item__category=category,
+        cv_score__isnull=False,
+        nlp_score__isnull=False,
+    ))
+
+    if len(accepted) < 10:
+        return 0.5  # not enough data, use equal weight
+
+    avg_cv  = sum(m.cv_score  for m in accepted if m.cv_score is not None) / len(accepted)
+    avg_nlp = sum(m.nlp_score for m in accepted if m.nlp_score is not None) / len(accepted)
+
+    total = avg_cv + avg_nlp
+    if total == 0:
+        return 0.5
+
+    return avg_cv / total  # how much image matters vs text for this category
+
+def match_items(source_item, candidate_items):
     results = []
+    
+    
     
     if not source_item.text_embedding: #!!!!
         logger.warning(
@@ -13,7 +35,8 @@ def match_items(source_item, candidate_items, alpha=0.5):
         )
         return []
 
-
+    alpha = get_learned_alpha(source_item.category)
+    
     for item in candidate_items:
         if source_item.item_type == item.item_type: #Enforces Lost <-> Found pairing
             continue
@@ -68,7 +91,7 @@ def match_items(source_item, candidate_items, alpha=0.5):
         final_score = min(1.0, (base_score + category_boost + location_boost))
         
 
-        match_obj, created = ItemMatch.objects.update_or_create(
+        match_obj, created = ItemMatch.objects.get_or_create(
             source_item=source_item,
             matched_item=item,
             defaults={
@@ -77,8 +100,21 @@ def match_items(source_item, candidate_items, alpha=0.5):
                 "nlp_score": text_sim,
                 "category_boost": category_boost,
                 "location_boost": location_boost,
+                "category_match": source_item.category == item.category,
+                "location_match": location_boost > 0,
+                "status": "PENDING",
             }
         )
+        
+        if not created and match_obj.status == 'PENDING':
+            match_obj.score = final_score
+            match_obj.cv_score = img_sim
+            match_obj.nlp_score = text_sim
+            match_obj.category_boost = category_boost
+            match_obj.location_boost = location_boost
+            match_obj.category_match = source_item.category == item.category
+            match_obj.location_match = location_boost > 0
+            match_obj.save()
 
         results.append({
             "match_obj": match_obj,

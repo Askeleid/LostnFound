@@ -18,6 +18,8 @@ from django.contrib.auth import logout
 from .forms import RegisterForm
 from .models import Profile
 from .models import ItemMatch
+import csv
+from django.http import HttpResponse
 
 
 def logout_user(request):
@@ -278,3 +280,53 @@ def match_feedback(request, match_id, feedback):
         match.save()
 
     return redirect('home')
+
+
+@login_required
+def export_dataset(request):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="itemmatch_dataset.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'cv_score',
+        'nlp_score',
+        'category_match',
+        'location_match',
+        'category_boost',
+        'location_boost',
+        'final_score',
+        'status_label',    # 1 = ACCEPTED, 0 = REJECTED
+        'feedback_label',  # 1 = HELPFUL, 0 = NOT_HELPFUL, -1 = IGNORED/None
+    ])
+
+    matches = ItemMatch.objects.filter(
+        status__in=['ACCEPTED', 'REJECTED'],
+        cv_score__isnull=False,
+        nlp_score__isnull=False,
+    )
+
+    feedback_map = {
+        'HELPFUL': 1,
+        'NOT_HELPFUL': 0,
+        'IGNORED': -1,
+        None: -1,
+    }
+
+    for match in matches:
+        writer.writerow([
+            match.cv_score,
+            match.nlp_score,
+            match.category_match,
+            match.location_match,
+            match.category_boost,
+            match.location_boost,
+            match.score,
+            1 if match.status == 'ACCEPTED' else 0,
+            feedback_map.get(match.user_feedback, -1),
+        ])
+
+    return response

@@ -230,6 +230,9 @@ class ItemMatch(models.Model):
         null=True,
         blank=True
     )
+    
+    category_match = models.BooleanField(default=False)
+    location_match = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
