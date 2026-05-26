@@ -2,45 +2,50 @@
 {% block title %}Create Item{% endblock %}
 
 {% block content %}
-<h1>Create Item</h1>
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
+<div class="max-w-xl mx-auto bg-white p-6 rounded shadow mt-10">
 
-    <!-- Image preview section -->
-    <div id="preview-section" style="display:none; margin-top:20px;">
-        <h3>Review your image before posting</h3>
-        <img id="image-preview"
-             style="max-width:200px; border-radius:8px;">
-    </div>
+    <h1 class="text-2xl font-bold mb-4">Create Item</h1>
 
-    <br><br>
-    <button type="submit">Post Item</button>
-</form>
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <!-- IMAGE PREVIEW -->
+        <div id="preview-box" class="hidden mt-4">
+            <p class="text-sm text-gray-600">Image preview:</p>
+            <img id="preview-img" class="w-40 mt-2 rounded border">
+        </div>
+
+        <button class="w-full bg-blue-600 text-white py-2 rounded mt-4">
+            Post Item
+        </button>
+    </form>
+
+</div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const fileInput = document.querySelector('input[type="file"][name="image"]');
-    const preview = document.getElementById("image-preview");
-    const previewSection = document.getElementById("preview-section");
+const input = document.querySelector('input[type="file"]');
+const previewBox = document.getElementById("preview-box");
+const previewImg = document.getElementById("preview-img");
 
-    if (!fileInput) return;
-
-    fileInput.addEventListener("change", function () {
+if (input) {
+    input.addEventListener("change", function () {
         const file = this.files[0];
+
         if (file) {
             const reader = new FileReader();
+
             reader.onload = function (e) {
-                preview.src = e.target.result;
-                previewSection.style.display = "block";
+                previewImg.src = e.target.result;
+                previewBox.classList.remove("hidden");
             };
+
             reader.readAsDataURL(file);
-        } else {
-            previewSection.style.display = "none";
         }
     });
-});
+}
 </script>
 
 {% endblock %}

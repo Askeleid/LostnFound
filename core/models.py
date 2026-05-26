@@ -127,7 +127,7 @@ class Claim(models.Model):
         ]
     
     def clean(self):
-        if not self.item_id:
+        if not self.item_id:  # type: ignore[attr-defined]
             return
         if self.item.user == self.claimer:
             raise ValidationError("You cannot claim your own item.")
@@ -143,7 +143,7 @@ class Claim(models.Model):
         return f"Claim by {self.claimer.username} on {self.item.title}"
     
     def save(self, *args, **kwargs):
-        self.full_clean(exclude=['item'] if not self.item_id else [])
+        self.full_clean(exclude=['item'] if not self.item_id else []) # type: ignore[attr-defined]
         super().save(*args, **kwargs)
     
     @transaction.atomic
@@ -239,6 +239,10 @@ class ItemMatch(models.Model):
     class Meta:
         unique_together = ('source_item', 'matched_item')
         ordering = ['-score']
+        
+    def clean(self):
+        if self.status == "ACCEPTED" and self.user_feedback == "NOT_HELPFUL":
+            raise ValidationError("Inconsistent state")
 
     def __str__(self):
         return f"{self.source_item.title} → {self.matched_item.title} ({self.score:.2f})"

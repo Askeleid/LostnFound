@@ -1,58 +1,93 @@
 {% extends "base.html" %}
-{% load static %}
-
 {% block title %}Submit Claim{% endblock %}
 
 {% block content %}
-<h1>Claim Item: {{ item.title }}</h1>
 
-<p><strong>Category:</strong> {{ item.category.name }}</p>
-<p><strong>Location:</strong> {{ item.location }}</p>
-<p><strong>Posted by:</strong> {{ item.user.username }}</p>
+<div class="max-w-xl mx-auto bg-white p-6 rounded shadow mt-10">
 
-{% if item.image %}
-    <p><strong>Item Image:</strong></p>
-    <img src="{{ item.image.url }}" width="200">
-{% endif %}
+    <h1 class="text-2xl font-bold mb-4">
+        Claim Item
+    </h1>
 
-<hr>
+    <!-- ITEM INFO -->
+    <div class="border rounded p-4 mb-6">
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
+        <h2 class="text-lg font-semibold">
+            {{ item.title }}
+        </h2>
 
-    <!-- Message -->
-    <p>
-        {{ form.message.label_tag }}<br>
-        {{ form.message }}
-    </p>
+        <p class="text-sm text-gray-600 mt-1">
+            {{ item.category.name }} • {{ item.location }}
+        </p>
 
-    <!-- Claim Image -->
-    <p>
-        {{ form.claim_image.label_tag }}<br>
-        {{ form.claim_image }}
-    </p>
+        <p class="text-sm text-gray-500">
+            Posted by: {{ item.user.username }}
+        </p>
 
-    <!-- Preview -->
-    <img id="preview" style="display:none;" width="200"/>
+        {% if item.image %}
+            <img src="{{ item.image.url }}"
+                 class="mt-3 w-48 rounded border">
+        {% endif %}
 
-    <br>
-    <button type="submit">Submit Claim</button>
-</form>
+    </div>
 
-<a href="{% url 'home' %}">Back to Dashboard</a>
+    <!-- CLAIM FORM -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+
+        <div>
+            <label class="font-semibold text-sm">Message</label>
+            <div class="mt-1">
+                {{ form.message }}
+            </div>
+        </div>
+
+        <div>
+            <label class="font-semibold text-sm">Proof Image (optional)</label>
+            <div class="mt-1">
+                {{ form.claim_image }}
+            </div>
+        </div>
+
+        <!-- IMAGE PREVIEW -->
+        <div id="preview-box" class="hidden mt-4">
+            <p class="text-sm text-gray-600">Preview:</p>
+            <img id="preview-img" class="w-40 mt-2 rounded border">
+        </div>
+
+        <button class="w-full bg-green-600 text-white py-2 rounded mt-4">
+            Submit Claim
+        </button>
+
+    </form>
+
+    <a href="{% url 'home' %}" class="text-blue-600 text-sm block mt-4">
+        ← Back to Dashboard
+    </a>
+
+</div>
 
 <script>
 const fileInput = document.querySelector('input[name="claim_image"]');
-const preview = document.getElementById('preview');
+const previewBox = document.getElementById("preview-box");
+const previewImg = document.getElementById("preview-img");
 
-fileInput.addEventListener('change', function(e) {
-    const file = e.target.files[0];
+if (fileInput) {
+    fileInput.addEventListener("change", function () {
+        const file = this.files[0];
 
-    if (file) {
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = "block";
-    }
-});
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewBox.classList.remove("hidden");
+            };
+
+            reader.readAsDataURL(file);
+        }
+    });
+}
 </script>
 
 {% endblock %}
