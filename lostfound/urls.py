@@ -4,11 +4,12 @@ from django.contrib.auth import views as auth_views
 
 from django.conf import settings
 from django.conf.urls.static import static
+from core.forms import LoginForm
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
-    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('login/', auth_views.LoginView.as_view(template_name="login.html",authentication_form=LoginForm), name='login'),
 ]
 
 if settings.DEBUG:

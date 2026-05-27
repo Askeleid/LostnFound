@@ -3,49 +3,114 @@
 
 {% block content %}
 
-<div class="max-w-xl mx-auto bg-white p-6 rounded shadow mt-10">
+<div class="max-w-2xl mx-auto mt-10">
 
-    <h1 class="text-2xl font-bold mb-4">Create Item</h1>
+    <div class="tron-card">
 
-    <form method="POST" enctype="multipart/form-data" class="space-y-4">
-        {% csrf_token %}
+        <!-- HEADER -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-cyan-400">
+                Create New Item
+            </h1>
 
-        {{ form.as_p }}
-
-        <!-- IMAGE PREVIEW -->
-        <div id="preview-box" class="hidden mt-4">
-            <p class="text-sm text-gray-600">Image preview:</p>
-            <img id="preview-img" class="w-40 mt-2 rounded border">
+            <p class="text-gray-400 mt-2">
+                Upload details about your lost or found item.
+            </p>
         </div>
 
-        <button class="w-full bg-blue-600 text-white py-2 rounded mt-4">
-            Post Item
-        </button>
-    </form>
+        <!-- FORM -->
+        <form method="POST"
+              enctype="multipart/form-data"
+              class="space-y-6">
+
+            {% csrf_token %}
+
+            <!-- FORM FIELDS -->
+            <div class="space-y-5">
+
+                {% for field in form %}
+
+                <div>
+
+                    <label class="block mb-2 text-sm font-semibold text-gray-300">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ field.help_text }}
+                        </p>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                        <p class="text-orange-400 text-sm mt-1">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <!-- IMAGE PREVIEW -->
+            <div id="preview-box"
+                 class="hidden mt-6 border border-cyan-500/30 rounded-xl p-4 bg-black/30">
+
+                <p class="text-sm text-cyan-300 mb-3 font-semibold">
+                    Image Preview
+                </p>
+
+                <img id="preview-img"
+                     class="w-56 rounded-xl border border-cyan-400/40 shadow-lg shadow-cyan-500/10">
+            </div>
+
+            <!-- SUBMIT -->
+            <button type="submit"
+                    class="tron-btn-cyan w-full text-lg py-3">
+                Post Item
+            </button>
+
+        </form>
+
+    </div>
 
 </div>
 
+<!-- IMAGE PREVIEW SCRIPT -->
 <script>
-const input = document.querySelector('input[type="file"]');
-const previewBox = document.getElementById("preview-box");
-const previewImg = document.getElementById("preview-img");
+document.addEventListener("DOMContentLoaded", function () {
 
-if (input) {
+    const input = document.querySelector('input[type="file"]');
+    const previewBox = document.getElementById("preview-box");
+    const previewImg = document.getElementById("preview-img");
+
+    if (!input) return;
+
     input.addEventListener("change", function () {
+
         const file = this.files[0];
 
-        if (file) {
-            const reader = new FileReader();
-
-            reader.onload = function (e) {
-                previewImg.src = e.target.result;
-                previewBox.classList.remove("hidden");
-            };
-
-            reader.readAsDataURL(file);
+        if (!file) {
+            previewBox.classList.add("hidden");
+            return;
         }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            previewImg.src = e.target.result;
+            previewBox.classList.remove("hidden");
+        };
+
+        reader.readAsDataURL(file);
+
     });
-}
+
+});
 </script>
 
 {% endblock %}

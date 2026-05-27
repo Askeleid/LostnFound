@@ -1,0 +1,508 @@
+/* ============================================================
+   TRON LEGACY — Custom Stylesheet
+   Cyan: User/Primary | Orange: CLU/Destructive
+   ============================================================ */
+
+/* --- CSS Variables --- */
+:root {
+    --cyan:        #00d4ff;
+    --cyan-dim:    #0099bb;
+    --cyan-glow:   rgba(0, 212, 255, 0.35);
+    --orange:      #ff8c00;
+    --orange-dim:  #cc6f00;
+    --orange-glow: rgba(255, 140, 0, 0.35);
+    --bg-base:     #08080f;
+    --bg-panel:    #0d0d1a;
+    --bg-card:     #111122;
+    --bg-input:    #0a0a18;
+    --border-dim:  #1e1e3a;
+    --text-primary:   #e8e8ff;
+    --text-secondary: #7070a0;
+    --text-muted:     #404060;
+    --green: #00ff88;
+    --green-dim: #00cc6a;
+    --green-glow: rgba(0, 255, 136, 0.35);
+}
+
+/* --- Base --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+}
+
+/* --- Grid Background --- */
+.tron-grid-bg {
+    background-color: var(--bg-base);
+    background-image:
+        linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--cyan-dim);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--cyan);
+}
+
+/* --- Text Selection --- */
+::selection {
+    background: var(--cyan-glow);
+    color: #fff;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes cyan-pulse {
+    0%, 100% { box-shadow: 0 0 6px 1px var(--cyan-glow); }
+    50%       { box-shadow: 0 0 18px 5px rgba(0, 212, 255, 0.55); }
+}
+
+@keyframes orange-pulse {
+    0%, 100% { box-shadow: 0 0 6px 1px var(--orange-glow); }
+    50%       { box-shadow: 0 0 18px 5px rgba(255, 140, 0, 0.55); }
+}
+
+@keyframes border-flicker {
+    0%, 100% { opacity: 1; }
+    92%       { opacity: 1; }
+    93%       { opacity: 0.4; }
+    94%       { opacity: 1; }
+    96%       { opacity: 0.6; }
+    97%       { opacity: 1; }
+}
+
+@keyframes scan-line {
+    0%   { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+}
+
+@keyframes liquid-flow {
+    0% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.25));
+    }
+
+    50% {
+        background-position: 100% 50%;
+        filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.25));
+    }
+
+    100% {
+        background-position: 0% 50%;
+        filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.25));
+    }
+}
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+
+.tron-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-top: 2px solid var(--cyan);
+    border-radius: 4px;
+    padding: 1.25rem;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.tron-card:hover {
+    box-shadow: 0 0 12px 2px var(--cyan-glow);
+    border-color: var(--cyan-dim);
+}
+
+.tron-card-orange {
+    background: var(--bg-card);
+    border: 1px solid var(--border-dim);
+    border-top: 2px solid var(--orange);
+    border-radius: 4px;
+    padding: 1.25rem;
+    transition: box-shadow 0.3s ease;
+}
+
+.tron-card-orange:hover {
+    box-shadow: 0 0 12px 2px var(--orange-glow);
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.tron-sidebar {
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border-dim);
+    width: 16rem;
+    min-height: 100vh;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.tron-sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent,
+        var(--cyan) 30%,
+        var(--cyan) 70%,
+        transparent
+    );
+    opacity: 0.4;
+    animation: border-flicker 8s ease-in-out infinite;
+}
+
+.tron-logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    text-shadow: 0 0 10px var(--cyan-glow);
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-dim);
+}
+
+.tron-liquid-logo {
+    font-size: 1.75rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+
+    background: linear-gradient(
+        90deg,
+        var(--cyan),
+        var(--orange),
+        var(--cyan)
+    );
+
+    background-size: 200% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    animation: liquid-flow 4s ease-in-out infinite;
+
+    text-shadow:
+        0 0 10px rgba(0, 212, 255, 0.25),
+        0 0 14px rgba(255, 140, 0, 0.18);
+}
+
+.tron-nav-link {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 3px;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: all 0.2s ease;
+    margin-bottom: 0.25rem;
+}
+
+.tron-nav-link:hover {
+    color: var(--cyan);
+    border-left-color: var(--cyan);
+    background: rgba(0, 212, 255, 0.05);
+    text-shadow: 0 0 8px var(--cyan-glow);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.tron-btn-cyan {
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    padding: 0.5rem 1.25rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.tron-btn-cyan:hover {
+    background: var(--cyan);
+    color: var(--bg-base);
+    box-shadow: 0 0 14px 3px var(--cyan-glow);
+}
+
+.tron-btn-orange {
+    background: transparent;
+    border: 1px solid var(--orange);
+    color: var(--orange);
+    padding: 0.5rem 1.25rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.tron-btn-orange:hover {
+    background: var(--orange);
+    color: var(--bg-base);
+    box-shadow: 0 0 14px 3px var(--orange-glow);
+}
+
+.tron-btn-green {
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 0.5rem 1.25rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.tron-btn-green:hover {
+    background: var(--green);
+    color: var(--bg-base);
+    box-shadow: 0 0 14px 3px var(--green-glow);
+}
+
+.tron-btn-full {
+    width: 100%;
+    text-align: center;
+    padding: 0.65rem 1.25rem;
+}
+
+.tron-fade {
+    position: relative;
+    max-height: 3rem;
+    overflow: hidden;
+}
+
+.tron-fade::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1rem;
+    background: linear-gradient(to bottom, transparent, #0a0a18);
+}
+
+
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+
+.tron-input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-dim);
+    border-bottom: 2px solid var(--cyan-dim);
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 3px;
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.tron-input:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 10px 2px var(--cyan-glow);
+    background: #0d0d20;
+}
+
+.tron-input::placeholder {
+    color: var(--text-muted);
+}
+
+.tron-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+}
+
+select.tron-input option {
+    background: var(--bg-panel);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   AI SECTION HEADER
+   ============================================================ */
+
+.tron-ai-header {
+    background: linear-gradient(135deg, #08080f 0%, #0a0a20 60%, #0d0d2a 100%);
+    border: 1px solid var(--border-dim);
+    border-top: 2px solid var(--cyan);
+    border-radius: 4px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    animation: cyan-pulse 3s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.tron-ai-header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(0, 212, 255, 0.04) 0%,
+        transparent 60%
+    );
+    pointer-events: none;
+}
+
+.tron-ai-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    text-shadow: 0 0 12px var(--cyan-glow);
+}
+
+.tron-ai-subtitle {
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-top: 0.3rem;
+}
+
+/* ============================================================
+   SCORE BADGE
+   ============================================================ */
+
+.tron-score-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+    border: 1px solid var(--cyan-dim);
+    padding: 0.2rem 0.6rem;
+    border-radius: 2px;
+    background: rgba(0, 212, 255, 0.07);
+}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+
+.tron-divider {
+    border: none;
+    border-top: 1px solid var(--border-dim);
+    margin: 1.5rem 0;
+}
+
+.tron-section-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+}
+
+.tron-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+}
+
+.tron-feedback-tag {
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.tron-blink {
+    color: var(--orange);
+    text-shadow: 0 0 6px var(--orange-glow);
+    animation: tron-blink 1s infinite;
+}
+
+@keyframes tron-blink {
+    0%, 49% {
+        opacity: 1;
+    }
+    50%, 100% {
+        opacity: 0;
+    }
+}
+
+.tron-ambient {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+
+    background:
+        radial-gradient(circle at 20% 20%,
+            rgba(0, 212, 255, 0.06),
+            transparent 35%),
+
+        radial-gradient(circle at 80% 70%,
+            rgba(255, 140, 0, 0.04),
+            transparent 40%),
+
+        radial-gradient(circle at 50% 100%,
+            rgba(0, 212, 255, 0.03),
+            transparent 45%);
+    
+    animation: ambient-shift 10s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-shift {
+    0% {
+        transform: scale(1);
+        filter: blur(0px);
+    }
+    100% {
+        transform: scale(1.05);
+        filter: blur(1px);
+    }
+}

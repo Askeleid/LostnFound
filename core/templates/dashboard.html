@@ -3,149 +3,203 @@
 
 {% block content %}
 
-<h1 class="text-3xl font-bold mb-6">
+<h1 class="text-3xl font-bold mb-6 text-cyan-300">
     Welcome, {{ user.username }}
 </h1>
 
 <div class="space-y-8">
 
 <!-- My Items -->
-<div class="bg-white p-4 rounded shadow">
-    <h2 class="text-xl font-semibold mb-3">My Items</h2>
+<div class="tron-card">
+    <h2 class="text-xl font-semibold mb-3 text-cyan-200">My Items</h2>
 
     <div class="space-y-3">
         {% for item in my_items %}
-        <div class="border rounded p-3">
+        <div class="border border-[#1e1e3a] rounded p-3 bg-[#0a0a18] flex gap-4 items-start">
 
-            <div class="font-bold">{{ item.title }}</div>
-            <div class="text-sm text-gray-500">
-                {{ item.item_type }} • {{ item.status }}
+            <!-- LEFT -->
+            <div class="flex-1">
+
+                <div class="font-bold text-white">
+                    {{ item.title }}
+                </div>
+
+                <p class="text-sm text-gray-200 leading-relaxed border-l-2 border-cyan-500/20 pl-3">
+                    {{ item.description }}
+                </p>
+
+                <div class="text-sm text-gray-400 mt-2">
+                    {{ item.item_type }} • {{ item.status }}
+                </div>
+
+                <form method="POST" action="{% url 'delete_item' item.id %}" class="mt-3">
+                    {% csrf_token %}
+                    <button class="tron-btn-orange text-xs !py-1 !px-3">
+                        Delete
+                    </button>
+                </form>
+
             </div>
 
+            <!-- RIGHT IMAGE -->
             {% if item.image %}
-                <img src="{{ item.image.url }}" class="mt-2 w-24 rounded">
+            <div class="flex-shrink-0">
+                <img src="{{ item.image.url }}"
+                    class="w-24 h-24 object-cover rounded border border-[#1e1e3a] cursor-pointer hover:scale-105 transition"
+                    onclick="openImageModal(this.src)">
+            </div>
             {% endif %}
-
-            <form method="POST" action="{% url 'delete_item' item.id %}">
-                {% csrf_token %}
-                <button class="text-red-500 text-sm mt-2">
-                    Delete
-                </button>
-            </form>
 
         </div>
         {% empty %}
-        <p class="text-gray-500">No items yet.</p>
+        <p class="text-orange-500">No items yet.</p>
         {% endfor %}
     </div>
 </div>
 
-
 <!-- Open Lost Items -->
-<div class="bg-white p-4 rounded shadow">
-    <h2 class="text-xl font-semibold mb-3">Open Lost Items</h2>
+<div class="tron-card">
+    <h2 class="text-xl font-semibold mb-3 text-cyan-200">Open Lost Items</h2>
 
     <div class="space-y-3">
         {% for item in open_lost %}
-        <div class="border rounded p-3">
+        <div class="border border-[#1e1e3a] rounded p-3 bg-[#0a0a18] flex gap-4 items-start">
 
-            <div class="font-bold">{{ item.title }}</div>
-            <div class="text-sm text-gray-500">
-                {{ item.category.name }} • {{ item.location }}
+            <!-- LEFT -->
+            <div class="flex-1">
+
+                <div class="font-bold text-white">
+                    {{ item.title }}
+                </div>
+
+                <p class="text-sm text-gray-200 leading-relaxed border-l-2 border-cyan-500/20 pl-3">
+                    {{ item.description }}
+                </p>
+
+                <div class="text-sm text-gray-400 mt-2">
+                    {{ item.item_type }} • {{ item.status }}
+                </div>
+
+                <form method="POST" action="{% url 'submit_claim' item.id %}" class="mt-3">
+                    {% csrf_token %}
+                    <button class="tron-btn-cyan text-xs !py-1 !px-3">
+                        Claim
+                    </button>
+                </form>
+
             </div>
 
+            <!-- RIGHT IMAGE -->
             {% if item.image %}
-                <img src="{{ item.image.url }}" class="mt-2 w-28 rounded">
-            {% endif %}
-
-            {% if item.user != user %}
-                <a href="{% url 'submit_claim' item.id %}"
-                   class="text-blue-500 text-sm mt-2 inline-block">
-                    Claim
-                </a>
+            <div class="flex-shrink-0">
+                <img src="{{ item.image.url }}"
+                    class="w-24 h-24 object-cover rounded border border-[#1e1e3a] cursor-pointer hover:scale-105 transition"
+                    onclick="openImageModal(this.src)">
+            </div>
             {% endif %}
 
         </div>
         {% empty %}
-        <p class="text-gray-500">No open lost items.</p>
+        <p class="text-orange-500">No open lost items.</p>
         {% endfor %}
     </div>
 </div>
 
-
 <!-- Open Found Items -->
-<div class="bg-white p-4 rounded shadow">
-    <h2 class="text-xl font-semibold mb-3">Open Found Items</h2>
+<div class="tron-card">
+    <h2 class="text-xl font-semibold mb-3 text-cyan-200">Open Found Items</h2>
 
     <div class="space-y-3">
         {% for item in open_found %}
-        <div class="border rounded p-3">
+        <div class="border border-[#1e1e3a] rounded p-3 bg-[#0a0a18] flex gap-4 items-start">
 
-            <div class="font-bold">{{ item.title }}</div>
-            <div class="text-sm text-gray-500">
-                {{ item.category.name }} • {{ item.location }}
+            <!-- LEFT -->
+            <div class="flex-1">
+
+                <div class="font-bold text-white">
+                    {{ item.title }}
+                </div>
+
+                <p class="text-sm text-gray-200 leading-relaxed border-l-2 border-cyan-500/20 pl-3">
+                    {{ item.description }}
+                </p>
+
+                <div class="text-sm text-gray-400 mt-2">
+                    {{ item.item_type }} • {{ item.status }}
+                </div>
+
+                <form method="POST" action="{% url 'submit_claim' item.id %}" class="mt-3">
+                    {% csrf_token %}
+                    <button class="tron-btn-cyan text-xs !py-1 !px-3">
+                        Claim
+                    </button>
+                </form>
+
             </div>
 
+            <!-- RIGHT IMAGE -->
             {% if item.image %}
-                <img src="{{ item.image.url }}" class="mt-2 w-28 rounded">
-            {% endif %}
-
-            {% if item.user != user %}
-                <a href="{% url 'submit_claim' item.id %}"
-                   class="text-blue-500 text-sm mt-2 inline-block">
-                    Claim
-                </a>
+            <div class="flex-shrink-0">
+                <img src="{{ item.image.url }}"
+                    class="w-24 h-24 object-cover rounded border border-[#1e1e3a] cursor-pointer hover:scale-105 transition"
+                    onclick="openImageModal(this.src)">
+            </div>
             {% endif %}
 
         </div>
         {% empty %}
-        <p class="text-gray-500">No open found items.</p>
+        <p class="text-orange-500">No open found items.</p>
         {% endfor %}
     </div>
 </div>
 
-
 <!-- Claims Made -->
-<div class="bg-white p-4 rounded shadow">
-    <h2 class="text-xl font-semibold mb-3">Claims Made</h2>
+<div class="tron-card">
+    <h2 class="text-xl font-semibold mb-3 text-cyan-200">Claims Made</h2>
 
     <div class="space-y-2">
         {% for claim in claims_made %}
-        <div class="border rounded p-3">
-            <div class="font-semibold">{{ claim.item.title }}</div>
-            <div class="text-sm text-gray-500">
+        <div class="border border-[#1e1e3a] rounded p-3 bg-[#0a0a18]">
+            <div class="font-semibold text-white">{{ claim.item.title }}</div>
+            {% if claim.status == 'APPROVED' %}
+            <div class="text-sm text-green-400">
                 Status: {{ claim.status }}
             </div>
+
+            {%else%}
+            <div class="text-sm text-red-400">
+                Status: {{ claim.status }}
+            </div>
+            {%endif%}
         </div>
         {% empty %}
-        <p class="text-gray-500">No claims made yet.</p>
+        <p class="text-orange-500">No claims made yet.</p>
         {% endfor %}
     </div>
 </div>
 
-
 <!-- Claims Received -->
-<div class="bg-white p-4 rounded shadow">
-    <h2 class="text-xl font-semibold mb-3">Claims Received</h2>
+<div class="tron-card">
+    <h2 class="text-xl font-semibold mb-3 text-cyan-200">Claims Received</h2>
 
     <div class="space-y-3">
         {% for claim in claims_received %}
-        <div class="border rounded p-3">
+        <div class="border border-[#1e1e3a] rounded p-3 bg-[#0a0a18]">
 
-            <div class="font-bold">
+            <div class="font-bold text-white">
                 {{ claim.claimer.username }}
             </div>
 
-            <div class="text-sm text-gray-500">
+            <div class="text-sm text-gray-400">
                 Item: {{ claim.item.title }} • {{ claim.status }}
             </div>
 
             {% if claim.status == "PENDING" and claim.item.user == user %}
             <div class="mt-2 flex gap-3 text-sm">
-                <a href="{% url 'approve_claim' claim.id %}" class="text-green-600">
+                <a href="{% url 'approve_claim' claim.id %}" class="text-green-400 hover:text-green-300">
                     Approve
                 </a>
-                <a href="{% url 'reject_claim' claim.id %}" class="text-red-600">
+                <a href="{% url 'reject_claim' claim.id %}" class="text-orange-400 hover:text-orange-300">
                     Reject
                 </a>
             </div>
@@ -153,114 +207,117 @@
 
         </div>
         {% empty %}
-        <p class="text-gray-500">No incoming claims.</p>
+        <p class="text-orange-500">No incoming claims.</p>
         {% endfor %}
     </div>
 </div>
 
-
 <!-- Notifications -->
-<div class="bg-white p-4 rounded shadow">
-    <h2 class="text-xl font-semibold mb-3">Notifications</h2>
+<div class="tron-card">
+    <h2 class="text-xl font-semibold mb-3 text-cyan-200">Notifications</h2>
 
     <div class="space-y-2">
         {% for n in notifications %}
-        <div class="border rounded p-3 text-sm">
+        <div class="border border-[#1e1e3a] rounded p-3 bg-[#0a0a18] text-sm text-gray-300">
             {{ n.message }}
 
             {% if not n.is_read %}
-                <span class="text-blue-500">(new)</span>
+                <span class="text-cyan-400">(new)</span>
                 <a href="{% url 'mark_notification_read' n.id %}"
-                   class="text-sm text-gray-500 ml-2">
+                   class="text-gray-400 ml-2 hover:text-gray-200">
                     mark read
                 </a>
             {% endif %}
         </div>
         {% empty %}
-        <p class="text-gray-500">No notifications.</p>
+        <p class="text-orange-500">No notifications.</p>
         {% endfor %}
     </div>
 </div>
 
-
-<!-- AI Matches -->
-<h2 class="text-2xl font-bold mb-4">AI Matches (Top Suggestions)</h2>
+<!-- AI SECTION HEADER (now Tron-aligned) -->
+<div class="tron-ai-header">
+    <div class="tron-ai-title">
+        AI Match Suggestions
+    </div>
+    <div class="tron-ai-subtitle">
+        Powered by EfficientNet-B0 & MiniLM-L6-v2
+    </div>
+</div>
 
 {% if matched_results %}
 
     {% for group in matched_results %}
-    <div class="mb-8">
+    <div class="tron-card">
 
-        <h3 class="text-lg font-semibold mb-3">
-            {{ group.item.title }}
+        <h3 class="text-sm font-semibold text-gray-300 mb-3">
+            Matches for:
+            <span class="text-cyan-300">{{ group.item.title }}</span>
         </h3>
 
         <div class="space-y-3">
-
             {% for match in group.matches %}
-            <div class="border rounded p-4 bg-white shadow-sm">
+            <div class="border border-[#1e1e3a] rounded p-4 bg-[#0a0a18] hover:shadow-[0_0_12px_rgba(0,212,255,0.15)] transition">
 
-                <div class="flex justify-between">
-                    <strong>{{ match.item.title }}</strong>
+                <div class="flex justify-between items-start">
+                    <strong class="text-white">{{ match.item.title }}</strong>
 
-                    <span class="text-blue-600 font-bold">
-                        Score: {{ match.score|floatformat:3 }}
+                    <span class="tron-score-badge">
+                        {{ match.score|floatformat:3 }}
                     </span>
                 </div>
 
-                <div class="text-sm text-gray-500">
+                <div class="text-sm text-gray-400 mt-1">
                     {{ match.item.category.name }} • {{ match.item.location }}
                 </div>
 
                 {% if match.item.image %}
-                    <img src="{{ match.item.image.url }}"
-                         class="w-28 mt-2 rounded">
+                    <img src="{{ match.item.image.url }}" class="w-28 mt-2 rounded border border-[#1e1e3a]">
                 {% endif %}
 
-                <div class="mt-3 text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                <div class="mt-3 text-xs text-gray-400 border border-[#1e1e3a] p-2 rounded bg-[#0d0d1a]">
                     Base: {{ match.base_score|floatformat:3 }} |
                     CV: {{ match.img_sim|floatformat:3 }} |
-                    NLP: {{ match.text_sim|floatformat:3 }} <br>
-                    Category: {{ match.category_boost|floatformat:3 }} |
-                    Location: {{ match.location_boost|floatformat:3 }}
+                    NLP: {{ match.text_sim|floatformat:3 }}<br>
+                    Category boost: {{ match.category_boost|floatformat:3 }} |
+                    Location boost: {{ match.location_boost|floatformat:3 }}
                 </div>
 
-                <div class="mt-3 flex gap-3 text-sm">
+                <div class="mt-3 flex gap-2 text-xs">
 
                     {% if match.item.user != user %}
-                        <a href="{% url 'submit_claim' match.item.id %}"
-                           class="text-blue-600">
-                            Claim
-                        </a>
+                    <a href="{% url 'submit_claim' match.item.id %}"
+                       class="tron-btn-cyan !py-1 !px-3 text-xs">
+                        Claim
+                    </a>
                     {% endif %}
 
                     <a href="{% url 'match_feedback' match.match_obj.id 'HELPFUL' %}"
-                       class="text-green-600">
+                       class="tron-btn-green text-xs !py-1 !px-3 hover:shadow-[0_0_14px_rgba(0,212,255,0.35)] transition-all duration-200">
                         Helpful
                     </a>
 
                     <a href="{% url 'match_feedback' match.match_obj.id 'NOT_HELPFUL' %}"
-                       class="text-red-600">
-                        Not helpful
+                       class="tron-btn-orange text-xs !py-1 !px-3 hover:shadow-[0_0_14px_rgba(0,212,255,0.35)] transition-all duration-200">
+                        Not Helpful
                     </a>
 
                 </div>
 
                 {% if match.match_obj.user_feedback %}
-                    <div class="mt-2 text-xs text-gray-500">
-                        Feedback: {{ match.match_obj.user_feedback }}
-                    </div>
+                <div class="mt-2 text-xs text-gray-500 italic">
+                    Feedback: {{ match.match_obj.user_feedback }}
+                </div>
                 {% endif %}
 
             </div>
             {% endfor %}
-
         </div>
     </div>
     {% endfor %}
 
 {% else %}
-    <p class="text-gray-500">No AI matches yet.</p>
+    <p class="text-gray-500 text-sm">No AI matches found yet.</p>
 {% endif %}
 
 </div>

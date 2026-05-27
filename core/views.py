@@ -20,6 +20,7 @@ from .models import Profile
 from .models import ItemMatch
 import csv
 from django.http import HttpResponse
+from .forms import LoginForm
 
 
 def logout_user(request):
@@ -46,6 +47,15 @@ def register(request):
         form = RegisterForm()
 
     return render(request, 'register.html', {'form': form})
+
+def login_view(request):
+    form = LoginForm(request, data=request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        login(request, form.get_user())
+        return redirect("home")
+
+    return render(request, "login.html", {"form": form})
 
 @login_required
 def create_item(request):

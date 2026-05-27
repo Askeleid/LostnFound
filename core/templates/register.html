@@ -3,23 +3,78 @@
 
 {% block content %}
 
-<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-10">
+<div class="max-w-md mx-auto tron-card mt-10">
 
-    <h2 class="text-2xl font-bold mb-4">Create Account</h2>
+    <h2 class="text-2xl font-bold mb-6 text-cyan-300">
+        Create Account
+    </h2>
 
-    <form method="post" class="space-y-3">
+    <form method="post" class="space-y-4">
         {% csrf_token %}
 
-        {{ form.as_p }}
+        <!-- Username -->
+        <div>
+            <label class="tron-label">Username</label>
+            {{ form.username }}
+        </div>
 
-        <button class="w-full bg-green-600 text-white py-2 rounded mt-3">
+        <!-- First Name -->
+        <div>
+            <label class="tron-label">First Name</label>
+            {{ form.first_name }}
+        </div>
+
+        <!-- Last Name -->
+        <div>
+            <label class="tron-label">Last Name</label>
+            {{ form.last_name }}
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label class="tron-label">Email</label>
+            {{ form.email }}
+        </div>
+
+        <!-- Password -->
+        <div>
+            <label class="tron-label">Password</label>
+            {{ form.password1 }}
+
+            <ul class="mt-2 text-xs text-orange-400 space-y-1 leading-relaxed">
+                {% for line in form.password1.help_text|linebreaksbr|striptags|cut:"<br>" %}
+                {% endfor %}
+            </ul>
+
+            <div class="mt-2 text-xs text-orange-400 space-y-1 leading-relaxed">
+                <p>Your password can’t be too similar to your other personal information.</p>
+                <p>Your password must contain at least 8 characters.</p>
+                <p>Your password can’t be a commonly used password.</p>
+                <p>Your password can’t be entirely numeric.</p>
+            </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+            <label class="tron-label">Confirm Password</label>
+            {{ form.password2 }}
+
+            <p class="text-xs text-orange-400 mt-1">
+                Must match password above
+            </p>
+        </div>
+
+        <button class="tron-btn-cyan w-full mt-4">
             Register
         </button>
     </form>
 
-    <p class="text-sm mt-4">
+    <p class="text-sm mt-5 text-gray-400">
         Already have an account?
-        <a class="text-blue-600" href="{% url 'login' %}">Login</a>
+        <a class="text-cyan-400 hover:text-cyan-300 ml-1"
+           href="{% url 'login' %}">
+            Login
+        </a>
     </p>
 
 </div>

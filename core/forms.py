@@ -1,12 +1,13 @@
 from django import forms
 from .models import Item, Claim
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 
-INPUT   = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-TEXTAREA = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-SELECT  = "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-FILE    = "text-sm text-gray-600 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+INPUT = "tron-input"
+TEXTAREA = "tron-input"
+SELECT = "tron-input"
+FILE = "tron-input"
 
 
 class RegisterForm(UserCreationForm):
@@ -23,15 +24,32 @@ class RegisterForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # password1 and password2 come from UserCreationForm, style them here
+
         self.fields['password1'].widget.attrs.update({'class': INPUT})
         self.fields['password2'].widget.attrs.update({'class': INPUT})
+        
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(widget=forms.TextInput(attrs={
+        'class': 'tron-input'
+    }))
+
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'tron-input'
+    }))
 
 
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        exclude = ['user', 'status', 'date_posted', 'updated_at', 'image_embedding', 'text_embedding']
+        exclude = [
+            'user',
+            'status',
+            'date_posted',
+            'updated_at',
+            'image_embedding',
+            'text_embedding'
+        ]
+
         widgets = {
             'title':       forms.TextInput(attrs={'class': INPUT}),
             'description': forms.Textarea(attrs={'class': TEXTAREA, 'rows': 4}),
@@ -47,6 +65,7 @@ class ClaimForm(forms.ModelForm):
     class Meta:
         model = Claim
         fields = ['message', 'claim_image']
+
         widgets = {
             'message': forms.Textarea(attrs={
                 'class': TEXTAREA,
@@ -55,7 +74,8 @@ class ClaimForm(forms.ModelForm):
             }),
             'claim_image': forms.ClearableFileInput(attrs={'class': FILE}),
         }
+
         labels = {
-            'message':     'Message',
+            'message': 'Message',
             'claim_image': 'Optional Image',
         }

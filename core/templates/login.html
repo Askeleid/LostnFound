@@ -3,31 +3,44 @@
 
 {% block content %}
 
-<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-10">
+<div class="max-w-md mx-auto tron-card mt-10">
 
-    <h2 class="text-2xl font-bold mb-4">Login</h2>
+    <h2 class="text-2xl font-bold mb-6 text-cyan-300">
+        Login
+    </h2>
 
-    <form method="post" class="space-y-3">
+    <form method="post" class="space-y-4">
         {% csrf_token %}
 
+        <!-- Username -->
         <div>
-            {{ form.username.label_tag }}
+            <label class="tron-label">Username</label>
             {{ form.username }}
         </div>
 
+        <!-- Password -->
         <div>
-            {{ form.password.label_tag }}
+            <label class="tron-label">Password</label>
             {{ form.password }}
         </div>
 
-        <button class="w-full bg-blue-600 text-white py-2 rounded mt-3">
+        <!-- Hint / Info -->
+        <div class="text-xs text-orange-400 space-y-1 leading-relaxed mt-2">
+            <p>Enter your credentials to access the system.</p>
+            <p>Make sure to double check your username and password.</p>
+        </div>
+
+        <button class="tron-btn-cyan w-full mt-4">
             Login
         </button>
     </form>
 
-    <p class="text-sm mt-4">
+    <p class="text-sm mt-5 text-gray-400">
         New here?
-        <a class="text-blue-600" href="{% url 'register' %}">Create account</a>
+        <a class="text-cyan-400 hover:text-cyan-300 ml-1"
+           href="{% url 'register' %}">
+            Create account
+        </a>
     </p>
 
 </div>
