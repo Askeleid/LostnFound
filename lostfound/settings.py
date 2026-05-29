@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-mf%&@*n9rwdg7v(j^(7n30qh1!k3gfvn(gcl9guu7&8=y08+go")
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".ngrok-free.dev", ".railway.app"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".ngrok-free.dev", ".railway.app", ".onrender.com"]
 
 
 # Application definition
@@ -164,4 +164,4 @@ LOGGING = {
     },
 }
 
-CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.dev", "https://*.railway.app"]
+CSRF_TRUSTED_ORIGINS = ["https://*.ngrok-free.dev", "https://*.railway.app", "https://*.onrender.com"]
