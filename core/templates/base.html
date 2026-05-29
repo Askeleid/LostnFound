@@ -186,19 +186,33 @@
 </div>
 
 <script>
-function updateClock() {
-    const now = new Date();
-
-    const h = String(now.getHours()).padStart(2, '0');
-    const m = String(now.getMinutes()).padStart(2, '0');
-    const s = String(now.getSeconds()).padStart(2, '0');
-
-    document.getElementById("systemClock").textContent =
-        `${h}:${m}:${s}`;
+if (!sessionStorage.getItem("systemStartTime")) {
+    sessionStorage.setItem("systemStartTime", Date.now());
 }
 
-setInterval(updateClock, 1000);
-updateClock();
+const startTime = Number(sessionStorage.getItem("systemStartTime"));
+
+function updateUptime() {
+    const elapsed = Date.now() - startTime;
+
+    const hours = String(
+        Math.floor(elapsed / 3600000)
+    ).padStart(2, '0');
+
+    const minutes = String(
+        Math.floor((elapsed % 3600000) / 60000)
+    ).padStart(2, '0');
+
+    const seconds = String(
+        Math.floor((elapsed % 60000) / 1000)
+    ).padStart(2, '0');
+
+    document.getElementById("systemClock").textContent =
+        `${hours}:${minutes}:${seconds}`;
+}
+
+setInterval(updateUptime, 1000);
+updateUptime();
 </script>
 
 </body>
