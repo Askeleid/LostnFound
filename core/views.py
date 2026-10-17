@@ -76,35 +76,59 @@ def create_item(request):
 def dashboard(request):
     user = request.user
     
-    my_items = Item.objects.filter(user=user) #Uses Django ORM filter with foreign key relationship
-    open_found = Item.objects.found().open().exclude(user = user)  #chain methods
-    open_lost = Item.objects.lost().open().exclude(user=user)
+    my_items = Item.objects.filter(user=user).select_related('category')
+    open_found = Item.objects.found().open().exclude(user=user).select_related('category', 'user') #type: ignore
+    open_lost = Item.objects.lost().open().exclude(user=user).select_related('category', 'user') #type: ignore
     
-    claims_made = Claim.objects.filter(claimer = user)
-    claims_received = Claim.objects.filter(item__user=user, status='PENDING')
+    claims_made = Claim.objects.filter(claimer=user).select_related('item')
+    claims_received = Claim.objects.filter(item__user=user, status='PENDING').select_related('item', 'claimer')
     
     matched_results = []
-
-    user_lost_items = my_items.filter(item_type='LOST')  # adjust field if different
+    user_lost_items = my_items.filter(item_type='LOST', status='OPEN')
 
     for lost_item in user_lost_items:
-        #Skip invalid embeddings
-        if not lost_item.text_embedding: # Description is mandatory
-            continue
-        
-        #Smart filtering
-        category_matched = open_found.filter(category=lost_item.category)
-        
-        #Fallback if no same category items
-        candidates = category_matched if category_matched.exists() else open_found
-        
-        matches = match_items(lost_item, candidates)
-        top_matches = matches[:5]  # top 5 only
-        
-        if top_matches:
+        # 1. Fetch precomputed matches directly from DB with relations preloaded
+        match_qs = (
+            ItemMatch.objects.filter(
+                source_item=lost_item,
+                matched_item__status='OPEN'
+            )
+            .exclude(status='REJECTED')
+            .select_related('matched_item__category', 'matched_item__user')
+            .order_by('-score')[:5]
+        )
+
+        # 2. Fallback: if no matches yet but embeddings exist, run matching once
+        if not match_qs.exists() and lost_item.text_embedding:
+            category_matched = open_found.filter(category=lost_item.category)
+            candidates = category_matched if category_matched.exists() else open_found
+            match_items(lost_item, candidates)
+            match_qs = (
+                ItemMatch.objects.filter(
+                    source_item=lost_item,
+                    matched_item__status='OPEN'
+                )
+                .exclude(status='REJECTED')
+                .select_related('matched_item__category', 'matched_item__user')
+                .order_by('-score')[:5]
+            )
+
+        if match_qs.exists():
             matched_results.append({
                 "item": lost_item,
-                "matches": top_matches
+                "matches": [
+                    {
+                        "match_obj": m,
+                        "item": m.matched_item,
+                        "score": m.score,
+                        "base_score": max(0.0, m.score - m.category_boost - m.location_boost),
+                        "category_boost": m.category_boost,
+                        "location_boost": m.location_boost,
+                        "img_sim": m.cv_score or 0.0,
+                        "text_sim": m.nlp_score or 0.0,
+                    }
+                    for m in match_qs
+                ]
             })
     
     notifications = request.user.notifications.order_by('-created_at')[:10]

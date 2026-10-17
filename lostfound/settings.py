@@ -81,11 +81,13 @@ DATABASES = {
         'PASSWORD': 'iamNOT@mature',
         'HOST': '127.0.0.1',
         'PORT': '5432',
+        'CONN_MAX_AGE': 600,
     }
 }
 
 if os.environ.get("DATABASE_URL"):
     DATABASES["default"] = dj_database_url.parse(os.environ.get("DATABASE_URL"))  # type: ignore
+    DATABASES['default']['CONN_MAX_AGE'] = 600  # Keep connections alive for 10 minutes
 
 
 

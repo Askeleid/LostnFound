@@ -1,3 +1,4 @@
+from django.db.models import Avg, Count
 from .embeddings import cosine_similarity
 from core.models import ItemMatch
 import logging
@@ -5,18 +6,23 @@ import logging
 logger = logging.getLogger("ai_pipeline")
 
 def get_learned_alpha(category):
-    accepted = list(ItemMatch.objects.filter(
+    stats = ItemMatch.objects.filter(
         status='ACCEPTED',
         source_item__category=category,
         cv_score__isnull=False,
         nlp_score__isnull=False,
-    ))
+    ).aggregate(
+        total_count=Count('id'),
+        avg_cv=Avg('cv_score'),
+        avg_nlp=Avg('nlp_score'),
+    )
 
-    if len(accepted) < 10:
+    count = stats.get('total_count') or 0
+    if count < 10:
         return 0.5  # not enough data, use equal weight
 
-    avg_cv  = sum(m.cv_score  for m in accepted if m.cv_score is not None) / len(accepted)
-    avg_nlp = sum(m.nlp_score for m in accepted if m.nlp_score is not None) / len(accepted)
+    avg_cv = stats.get('avg_cv') or 0.0
+    avg_nlp = stats.get('avg_nlp') or 0.0
 
     total = avg_cv + avg_nlp
     if total == 0:
@@ -132,3 +138,47 @@ def match_items(source_item, candidate_items):
     results.sort(key=lambda x: x["score"], reverse=True)
 
     return results
+
+
+def process_item_matches(item):
+    """
+    Called after an item's embeddings are generated (e.g. from background worker).
+    - If the item is LOST: matches it against all open FOUND items.
+    - If the item is FOUND: matches all open LOST items against this new candidate.
+    """
+    from core.models import Item
+
+    if not item.text_embedding:
+        return []
+
+    if item.item_type == 'LOST':
+        candidates = Item.objects.found().open().exclude(user=item.user).exclude(text_embedding__isnull=True) #type: ignore
+        return match_items(source_item=item, candidate_items=candidates)
+    elif item.item_type == 'FOUND':
+        lost_items = Item.objects.lost().open().exclude(user=item.user).exclude(text_embedding__isnull=True) #type: ignore
+        results = []
+        for lost_item in lost_items:
+            matches = match_items(source_item=lost_item, candidate_items=[item])
+            results.extend(matches)
+        return results
+    return []
+
+
+def generate_all_matches():
+    """
+    Backfills/refreshes matches for all open lost items against open found items.
+    Useful for initialization or maintenance.
+    """
+    from core.models import Item
+
+    open_lost = Item.objects.lost().open().exclude(text_embedding__isnull=True) #type: ignore
+    open_found = Item.objects.found().open().exclude(text_embedding__isnull=True) #type: ignore
+
+    total_matches = 0
+    for lost in open_lost:
+        candidates = open_found.exclude(user=lost.user)
+        results = match_items(source_item=lost, candidate_items=candidates)
+        total_matches += len(results)
+
+    logger.info(f"[GENERATE_ALL_MATCHES] processed {open_lost.count()} lost items, created/updated {total_matches} matches")
+    return total_matches

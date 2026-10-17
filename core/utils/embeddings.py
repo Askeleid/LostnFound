@@ -6,14 +6,16 @@ logger = logging.getLogger("ai_pipeline")
 
 _image_model = None
 _text_model = None
-_transform = None  # lazy too
+_transform = None 
 
 def get_image_model():
     global _image_model
     if _image_model is None:
         import torch
         import torchvision.models as models
-        model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.DEFAULT)
+        model = models.efficientnet_b0(weights=None)
+        state = torch.load("models/efficientnet_b0.pth", map_location="cpu", weights_only=True)
+        model.load_state_dict(state)
         _image_model = model.features
         _image_model.eval()
     return _image_model
@@ -24,7 +26,6 @@ def get_transform():
         import torchvision.transforms as transforms
         _transform = transforms.Compose([
             transforms.Resize((224, 224)),
-            transforms.ColorJitter(brightness=0.1, contrast=0.1),
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],
@@ -37,7 +38,9 @@ def get_text_model():
     global _text_model
     if _text_model is None:
         from sentence_transformers import SentenceTransformer
-        _text_model = SentenceTransformer('all-MiniLM-L6-v2')
+        _text_model = SentenceTransformer(
+            "models/all-MiniLM-L6-v2"
+        )
     return _text_model
 
 def get_image_embedding(image_path):
